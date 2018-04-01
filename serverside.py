@@ -35,6 +35,8 @@ class S(BaseHTTPRequestHandler):
                 print "after: " + str(S.fake_server_status)
             elif splittedKeyValuePair[1] == "false":
                 S.fake_server_status = False
+                S.clients.clear()
+                S.removedClients.clear()
                 print "after: " + str(S.fake_server_status)
     #Step 3 - clients
     clients = {}#key is name, value is an array with 3 values: (timeClientAddedToDictionary, timeOfLastKeepAlive, averageTimeBetweenKeepAlives)
@@ -42,7 +44,8 @@ class S(BaseHTTPRequestHandler):
     lastServerUpdate = None
     clientKeepAliveTimeout = 5
     def addClient(self, keyValuePair):
-        
+        if S.fake_server_status == False:
+            return str(False)
         splittedKeyValuePair = keyValuePair.split("=")
         name = None
         if splittedKeyValuePair[0] == "name":
@@ -59,6 +62,8 @@ class S(BaseHTTPRequestHandler):
         return str(False)
     #if onlyNewEntries is true, it saves bandwidth - serving the purpose of ajax :)
     def getClientsDictionary(self, onlyNewEntries=True):
+        if S.fake_server_status == False:
+            return ""
         dicopy = S.clients.copy()
         if onlyNewEntries == True and not S.lastServerUpdate == None:
             for key, value in dicopy.iteritems():
@@ -78,6 +83,8 @@ class S(BaseHTTPRequestHandler):
         removedClients.clear()
         return returnedString
     def keepalive(self, name):
+        if S.fake_server_status == False:
+            return str(False)
         if S.clients.has_key(name) and not S.keepalivetimeoutcheck(self, name):
             value = S.clients[name]
             thisnewkeepalive = time.time()
