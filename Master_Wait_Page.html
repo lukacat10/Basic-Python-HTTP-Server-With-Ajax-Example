@@ -1,0 +1,118 @@
+<html>
+	<head>
+		<title>Server Page</title>
+	</head>
+	<body>
+		<div id="step1">
+			<h1>Step 1: Hello! Welcome to the server!</h1>
+			<p>Lets start by checking the server's status using ajax!</p>
+			<p>Click the following button to check the status:</p>
+			<button onclick="statusCheckAjax()">Check Status</button>
+			<p>Status: <span id="statustext" style="color: gray">Unknown</span></p>
+			<script>
+				/*
+				This code creates an ajax request for the status of the server, and updates accordingly.
+				*/
+				function statusCheckAjax(){
+					var xhttp = new XMLHttpRequest();
+					/**
+					arg1: request method
+					arg2: request's destination. Note on that: Due to same destination policy, browsers only allow to send
+							ajax requests to the same address of the website, and not to any other website, because if javascript
+							code is injected to the website's code, ajax may be used to send it to bad places.
+					arg3: async waiting for response? should always be true. this is the argument which allows the page itself
+							to function while javascript is waiting for an ajax response. It is essentialy a multi threading
+							measurement, and when data arrives, the onreadystatechange() function is used to run code to process 
+							the data.
+					*/
+					xhttp.open("POST", "http://localhost:81/ajaxrequests", true);
+					xhttp.onreadystatechange = function() {//This function runs when the server answers the ajax request.
+						console.log("readystate=" + this.readyState + " status=" + this.status);
+						if (this.readyState == 4 && this.status == 200) {//http status 200 is good, and state 4 is the correct state for data receiving.
+							console.log(this.responseText);
+							if(this.responseText.startsWith("True"))
+							{
+								document.getElementById("statustext").innerHTML = "ON";
+								document.getElementById("statustext").style.color = "green";
+								document.getElementById("actionOnServer").innerHTML = "Stop Server";
+							}else{
+								document.getElementById("statustext").innerHTML = "OFF";
+								document.getElementById("statustext").style.color = "red";
+								document.getElementById("actionOnServer").innerHTML = "Start Server";
+							}
+							document.getElementById("step2").style.display = "block";
+							//document.getElementById("statustext").innerHTML = this.responseText;
+							console.log("test2");
+						}
+					};
+					
+					xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					xhttp.send("reqtype=checkstatus");
+				}
+			</script>
+		</div>
+		<div id="step2" style="display: none">
+			<h3>Step 2: Now its time to <u> change</u> the server status using ajax!</h3>
+			<p>This time, the ajax will initiate commands on the server side, and wait for the response. When response arrives,
+			it will request the server status (without the users input, aka automatically) and update the text.</p>
+			<button id="actionOnServer" onclick="statusChangeAjax()"></button>
+			<script>
+			/*
+			This code creates an ajax request for the status of the server, and updates accordingly.
+			*/
+			function statusChangeAjax(){
+				var xhttp = new XMLHttpRequest();
+				//defines some data about the destination of the ajax request.
+				/**
+				arg1: request method
+				arg2: request's destination. Note on that: Due to same destination policy, browsers only allow to send
+						ajax requests to the same address of the website, and not to any other website, because if javascript
+						code is injected to the website's code, ajax may be used to send it to bad places.
+				arg3: async waiting for response? should always be true. this is the argument which allows the page itself
+						to function while javascript is waiting for an ajax response. It is essentialy a multi threading
+						measurement, and when data arrives, the onreadystatechange() function is used to run code to process 
+						the data.
+				*/
+				xhttp.open("POST", "http://localhost:81/ajaxrequests", true);
+				xhttp.onreadystatechange = function() {//This function runs when the server answers the ajax request.
+					console.log("readystate=" + this.readyState + " status=" + this.status);
+					if (this.readyState == 4 && this.status == 200) {
+						statusCheckAjax();
+					}
+				};
+				
+				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				if(document.getElementById("actionOnServer").innerHTML.startsWith("Start"))
+					xhttp.send("reqtype=changestatus&changevalue=true");
+				else
+					xhttp.send("reqtype=changestatus&changevalue=false");
+			}
+		</script>
+		</div>
+		<div id="step3">
+			<h3>So, step 3 must be the demonstration of live updates...</h3>
+			<div id="step3-textsection">
+				<p>What do I mean when I say live updates?</p>
+				<p>With live updates, the client constantly pings the server for an update. In order to save bandwidth,
+				the content of the message will be minimal when the communication is only status-based (no new information,
+				just some update requests which are denied cause there is nothing new).</p>
+				<p>Why do we ask for periodic updates: Client to Server, and then get the update from Server to Client, 
+				instead of just waiting for a message from the server?</p>
+				<p>It is due to how the http protocol works. The client doesn't keep the connection with the server after 
+				the page finished loading. It disconnects when done, and the server can't initiate a new connection with the
+				client, because of how HTTP protocol is designed, and because of NAT limitations and generaly bad practice by
+				allowing such a thing.</p>
+				<p><u>So, what exactly is going to be demonstrated?</u></p>
+				<p>Step 3 will show the live status of how many clients are connected to the server, and when was their last KeepAlive signal</p>
+				<button 
+				onclick="
+				document.getElementById('step3-textsection').style.display = 'none';
+				document.getElementById('step3-controlpanel').style.display = 'block';
+				">Hide intro text and show the control panel</button>
+			</div>
+			<div id="step3-controlpanel" style="display: none">
+			<p>Here:</p>
+			</div>
+		</div>
+	</body>
+</html>

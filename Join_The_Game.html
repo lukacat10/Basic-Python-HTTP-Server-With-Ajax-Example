@@ -1,0 +1,46 @@
+<html>
+	<head>
+		<title>Client Page</title>
+	</head>
+	<body>
+		<h1>Welcome! Ready to join the server?</h1>
+		<div id="step1">
+			<p>Try to join the server with the name using the 'Join Server' button:</p>
+			<input id="namefield" type="text" placeholder="Your Name"/>
+			<button onclick="joinServer()">Join Server</button>
+			<script>
+			function joinServer(){
+				var xhttp = new XMLHttpRequest();
+				//defines some data about the destination of the ajax request.
+				/**
+				arg1: request method
+				arg2: request's destination. Note on that: Due to same destination policy, browsers only allow to send
+						ajax requests to the same address of the website, and not to any other website, because if javascript
+						code is injected to the website's code, ajax may be used to send it to bad places.
+				arg3: async waiting for response? should always be true. this is the argument which allows the page itself
+						to function while javascript is waiting for an ajax response. It is essentialy a multi threading
+						measurement, and when data arrives, the onreadystatechange() function is used to run code to process 
+						the data.
+				*/
+				xhttp.open("POST", "http://localhost:81/ajaxrequests", true);
+				xhttp.onreadystatechange = function() {//This function runs when the server answers the ajax request.
+					console.log("readystate=" + this.readyState + " status=" + this.status);
+					if (this.readyState == 4 && this.status == 200) {
+						if(this.responseText != "False")
+							document.getElementById("setting_timout").innerHTML = this.responseText;
+					}
+				};
+				
+				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xhttp.send("reqtype=joinServer&name=" + document.getElementById("namefield").value);
+			}
+			</script>
+			<p>
+				Server Settings:
+				<ul style="list-style-type: none">
+					<li id="setting_timout"></li>
+				</ul>
+			</p>
+		</div>
+	</body>
+</html>
